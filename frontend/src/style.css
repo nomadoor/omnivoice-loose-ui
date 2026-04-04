@@ -124,7 +124,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
 }
@@ -155,8 +154,7 @@ button {
 
 /* ─── Job list ────────────────────────────────────────────── */
 
-.job-list,
-.settings-panel {
+.job-list {
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -164,28 +162,28 @@ button {
 }
 
 .job-list::-webkit-scrollbar,
-.settings-panel::-webkit-scrollbar {
+.settings-grid::-webkit-scrollbar {
   width: 4px;
 }
 
 .job-list::-webkit-scrollbar-track,
-.settings-panel::-webkit-scrollbar-track {
+.settings-grid::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .job-list::-webkit-scrollbar-thumb,
-.settings-panel::-webkit-scrollbar-thumb {
+.settings-grid::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.10);
   border-radius: 999px;
 }
 
 .job-list::-webkit-scrollbar-thumb:hover,
-.settings-panel::-webkit-scrollbar-thumb:hover {
+.settings-grid::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.18);
 }
 
 .job-list {
-  padding: 12px 0 18px;
+  padding: 20px 0 18px;
 }
 
 .job-list__items {
@@ -514,17 +512,28 @@ button {
 .settings-panel {
   background: var(--bg-panel);
   border-left: 1px solid var(--border);
-  padding: 20px 18px 28px;
   height: 100%;
-  overflow-x: hidden;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.settings-panel__content {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  padding: 20px 18px 28px;
 }
 
 .settings-panel__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
 }
 
 .settings-panel__title {
@@ -540,6 +549,11 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+  min-height: 0;
+  padding: 20px 0 18px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
 }
 
 .settings-grid > * {
