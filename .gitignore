@@ -1,0 +1,15 @@
+backend/.venv/
+backend/__pycache__/
+backend/app/__pycache__/
+backend/generated/
+backend/uploads/
+backend/hf-cache/
+backend/.pytest_cache/
+frontend/node_modules/
+frontend/dist/
+frontend/.eslintcache
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
+backend/state.json
