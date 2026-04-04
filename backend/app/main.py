@@ -21,7 +21,7 @@ from .schemas import (
 from .services import service
 
 
-app = FastAPI(title="omnivoice-loose-ui backend")
+app = FastAPI(title="OmniVoice Loose UI backend")
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,4 +1,4 @@
-# omnivoice-loose-ui
+# OmniVoice Loose UI
 
 [![日本語](https://img.shields.io/badge/README-%E6%97%A5%E6%9C%AC%E8%AA%9E-1f1f1f?style=flat-square)](./README.ja.md)
 

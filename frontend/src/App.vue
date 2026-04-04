@@ -30,7 +30,7 @@ const handleReuse = (job: Job) => {
       <section class="chat-shell">
         <div class="chat-shell__content">
           <header class="chat-shell__header">
-            <p class="chat-shell__title">omnivoice-loose-ui</p>
+            <p class="chat-shell__title">OmniVoice Loose UI</p>
             <button
               v-if="jobs.length"
               class="button button--ghost chat-shell__clear"
