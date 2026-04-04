@@ -156,14 +156,19 @@ button {
 
 .job-list {
   min-height: 0;
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: scroll;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
 }
 
-.job-list::-webkit-scrollbar,
-.settings-grid::-webkit-scrollbar {
+.job-list::-webkit-scrollbar {
   width: 4px;
+}
+
+.settings-grid::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .job-list::-webkit-scrollbar-track,
@@ -551,9 +556,10 @@ button {
   gap: 14px;
   min-height: 0;
   padding: 20px 0 18px;
+  overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .settings-grid > * {
@@ -602,12 +608,13 @@ button {
 }
 
 .reference-audio-select__trigger {
-  position: relative;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   width: 100%;
   min-width: 0;
-  padding: 8px 38px 8px 11px;
+  padding: 8px 11px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: #151515;
@@ -615,6 +622,7 @@ button {
   font-size: 0.8rem;
   line-height: 1.2;
   text-align: left;
+  cursor: pointer;
   transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
 }
 
@@ -633,14 +641,12 @@ button {
 }
 
 .reference-audio-select__icon {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 22px;
   height: 22px;
+  flex-shrink: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-secondary);
@@ -752,6 +758,25 @@ button {
   resize: vertical;
   min-height: 80px;
   line-height: 1.5;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
+}
+
+.field textarea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.field textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.field textarea::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+}
+
+.field textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .upload-dropzone {
@@ -826,7 +851,6 @@ button {
 }
 
 .reference-audio-card {
-  position: relative;
   display: grid;
   gap: 10px;
   min-width: 0;
@@ -836,15 +860,21 @@ button {
   background: #141414;
 }
 
+.reference-audio-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
 .reference-audio-card__clear {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 22px;
   height: 22px;
+  flex-shrink: 0;
   border: none;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
@@ -865,9 +895,8 @@ button {
 
 .reference-audio-card__meta {
   display: grid;
-  gap: 2px;
+  gap: 6px;
   min-width: 0;
-  padding-right: 28px;
 }
 
 .reference-audio-card__title,
@@ -925,16 +954,21 @@ button {
 }
 
 .token-picker__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   max-width: 100%;
   min-width: 0;
+  min-height: 28px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: transparent;
   color: var(--text-secondary);
-  padding: 5px 9px;
+  padding: 0 9px;
   font-size: 0.74rem;
   line-height: 1.2;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .token-picker__item--active {
@@ -951,10 +985,38 @@ button {
   min-width: 0;
 }
 
+.field__label-row--overlay {
+  position: relative;
+  display: block;
+}
+
+.field--voice-instruction {
+  position: relative;
+}
+
 .field__value {
   font-size: 0.78rem;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
+}
+
+.field__badge--clear {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  min-height: 16px;
+  padding: 0 6px;
+  border: 0;
+  background: #221715;
+  color: var(--status-error);
+  font-size: 0.64rem;
+  cursor: pointer;
+}
+
+.field__badge--clear:hover:not(:disabled) {
+  background: #2a1b18;
+  color: #efb1a3;
 }
 
 .field__error {

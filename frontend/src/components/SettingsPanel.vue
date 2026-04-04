@@ -326,20 +326,21 @@ watch(
             </div>
 
             <div v-if="settings.referenceAudio || localPreviewUrl" class="reference-audio-card">
-              <button
-                type="button"
-                class="reference-audio-card__clear"
-                :disabled="isUploading"
-                @click="clearReferenceAudio"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M18 6 6 18" />
-                  <path d="m6 6 12 12" />
-                </svg>
-              </button>
-
               <div class="reference-audio-card__meta">
-                <p class="reference-audio-card__title">{{ localFileName || 'Reference audio' }}</p>
+                <div class="reference-audio-card__header">
+                  <p class="reference-audio-card__title">{{ localFileName || 'Reference audio' }}</p>
+                  <button
+                    type="button"
+                    class="reference-audio-card__clear"
+                    :disabled="isUploading"
+                    @click="clearReferenceAudio"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M18 6 6 18" />
+                      <path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                </div>
                 <p class="reference-audio-card__subtle">
                   {{ isUploading ? 'uploading…' : 'Loaded' }}
                 </p>
@@ -400,8 +401,18 @@ watch(
           />
         </label>
 
-        <label class="field field--full">
-          <span class="field__label">Voice Instruction</span>
+        <label class="field field--full field--voice-instruction">
+          <span class="field__label-row field__label-row--overlay">
+            <span class="field__label">Voice Instruction</span>
+            <button
+              v-if="settings.voiceInstruction"
+              type="button"
+              class="field__badge field__badge--clear"
+              @click="emit('update', 'voiceInstruction', '')"
+            >
+              Clear
+            </button>
+          </span>
           <div class="instruction-builder">
             <div class="instruction-groups">
               <div
@@ -424,14 +435,6 @@ watch(
                 </div>
               </div>
             </div>
-            <button
-              v-if="settings.voiceInstruction"
-              type="button"
-              class="button"
-              @click="emit('update', 'voiceInstruction', '')"
-            >
-              Clear
-            </button>
           </div>
         </label>
 
