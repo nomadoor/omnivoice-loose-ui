@@ -304,24 +304,32 @@ watch(
                 role="listbox"
                 aria-label="Saved reference audio"
               >
-                <button
-                  type="button"
+                <div
+                  role="option"
+                  tabindex="0"
                   class="reference-audio-select__option"
                   :class="{ 'reference-audio-select__option--active': !settings.referenceAudio }"
+                  :aria-selected="!settings.referenceAudio"
                   @click="clearSavedReferenceSelection"
+                  @keydown.enter.prevent="clearSavedReferenceSelection"
+                  @keydown.space.prevent="clearSavedReferenceSelection"
                 >
                   None
-                </button>
-                <button
+                </div>
+                <div
                   v-for="item in recentReferenceAudio"
                   :key="item.serverPath"
-                  type="button"
+                  role="option"
+                  tabindex="0"
                   class="reference-audio-select__option"
                   :class="{ 'reference-audio-select__option--active': settings.referenceAudio === item.serverPath }"
+                  :aria-selected="settings.referenceAudio === item.serverPath"
                   @click="selectSavedReferenceAudio(item)"
+                  @keydown.enter.prevent="selectSavedReferenceAudio(item)"
+                  @keydown.space.prevent="selectSavedReferenceAudio(item)"
                 >
                   {{ item.fileName }}
-                </button>
+                </div>
               </div>
             </div>
 
@@ -401,9 +409,9 @@ watch(
           />
         </label>
 
-        <label class="field field--full field--voice-instruction">
-          <span class="field__label-row field__label-row--overlay">
-            <span class="field__label">Voice Instruction</span>
+        <div class="field field--full field--voice-instruction">
+          <div class="field__label-row field__label-row--overlay">
+            <span class="field__label" id="voice-instruction-label">Voice Instruction</span>
             <button
               v-if="settings.voiceInstruction"
               type="button"
@@ -412,8 +420,8 @@ watch(
             >
               Clear
             </button>
-          </span>
-          <div class="instruction-builder">
+          </div>
+          <div class="instruction-builder" role="group" aria-labelledby="voice-instruction-label">
             <div class="instruction-groups">
               <div
                 v-for="group in voiceInstructionGroups"
@@ -436,7 +444,7 @@ watch(
               </div>
             </div>
           </div>
-        </label>
+        </div>
 
         <div class="field field--full">
           <div class="field__label-row">

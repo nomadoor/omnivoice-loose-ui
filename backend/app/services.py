@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import math
 import re
+import secrets
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -44,15 +45,9 @@ class OmniVoiceService:
     def _build_output_path(self, text: str) -> Path:
         timestamp = datetime.now().strftime("%y%m%d-%H%M%S")
         slug = self._slugify_text(text)
-        base_name = f"{timestamp}-{slug}" if slug else timestamp
-        candidate = settings.output_dir / f"{base_name}.wav"
-        index = 1
-
-        while candidate.exists():
-            candidate = settings.output_dir / f"{base_name}-{index:02d}.wav"
-            index += 1
-
-        return candidate
+        unique_suffix = secrets.token_hex(2)
+        base_name = f"{timestamp}-{slug}-{unique_suffix}" if slug else f"{timestamp}-{unique_suffix}"
+        return settings.output_dir / f"{base_name}.wav"
 
     def _slugify_text(self, text: str) -> str:
         normalized = re.sub(r"\s+", "-", text.strip())
