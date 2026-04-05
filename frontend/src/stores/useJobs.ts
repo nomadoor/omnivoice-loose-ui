@@ -58,9 +58,17 @@ export const useJobs = () => {
   const isProcessingQueue = ref(false)
   const isReady = ref(false)
   let settingsPersistTimer: ReturnType<typeof setTimeout> | null = null
+  let lastPersistPromise: Promise<void> = Promise.resolve()
 
-  const persistState = async () => {
-    await saveAppState(toPersistedState(settings, jobs.value))
+  const persistState = () => {
+    const snapshot = toPersistedState(settings, jobs.value)
+    const nextPersistPromise = lastPersistPromise
+      .catch(() => undefined)
+      .then(() => saveAppState(snapshot))
+      .then(() => undefined)
+
+    lastPersistPromise = nextPersistPromise
+    return nextPersistPromise
   }
 
   const scheduleSettingsPersist = () => {
@@ -70,7 +78,9 @@ export const useJobs = () => {
 
     settingsPersistTimer = setTimeout(() => {
       settingsPersistTimer = null
-      void persistState()
+      persistState().catch((error) => {
+        console.error('Failed to persist settings state.', error)
+      })
     }, SETTINGS_PERSIST_DELAY_MS)
   }
 

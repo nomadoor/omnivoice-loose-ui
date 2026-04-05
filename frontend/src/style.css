@@ -512,6 +512,13 @@ button {
   outline: none;
 }
 
+.reference-audio-select__trigger:focus-visible,
+.reference-audio-card__clear:focus-visible,
+.token-picker__item:focus-visible,
+.field__badge--clear:focus-visible {
+  box-shadow: 0 0 0 2px rgba(242, 238, 231, 0.9);
+}
+
 /* ─── Settings panel ──────────────────────────────────────── */
 
 .settings-panel {

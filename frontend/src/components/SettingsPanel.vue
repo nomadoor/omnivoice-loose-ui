@@ -114,6 +114,9 @@ const handleReferenceAudioUpload = async (file: File) => {
     applyReferenceAudio(result)
     await loadRecentReferenceAudio()
   } catch (error) {
+    revokePreviewUrl()
+    localPreviewUrl.value = ''
+    localFileName.value = ''
     uploadError.value = error instanceof Error ? error.message : 'Reference audio upload failed.'
   } finally {
     isUploading.value = false
@@ -350,7 +353,7 @@ watch(
                   </button>
                 </div>
                 <p class="reference-audio-card__subtle">
-                  {{ isUploading ? 'uploading…' : 'Loaded' }}
+                  {{ isUploading ? 'uploading…' : (settings.referenceAudio ? 'Loaded' : 'Not uploaded') }}
                 </p>
               </div>
 
