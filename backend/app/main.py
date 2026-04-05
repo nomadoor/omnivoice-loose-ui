@@ -21,7 +21,7 @@ from .schemas import (
 from .services import service
 
 
-app = FastAPI(title="omnivoice-loose-ui backend")
+app = FastAPI(title="OmniVoice Loose UI backend")
 
 app.add_middleware(
     CORSMiddleware,
@@ -106,7 +106,7 @@ def _build_upload_target_path(original_file_name: str) -> Path:
     candidate = settings.upload_dir / f"{stem}{suffix}"
     index = 1
 
-    while candidate.exists() or candidate.with_suffix(f"{candidate.suffix}.json").exists():
+    while candidate.exists():
         candidate = settings.upload_dir / f"{stem} ({index}){suffix}"
         index += 1
 
@@ -155,20 +155,10 @@ async def list_reference_audio() -> list[ReferenceAudioItem]:
         if not path.is_file() or path.suffix == ".json":
             continue
 
-        metadata_path = path.with_suffix(f"{path.suffix}.json")
-        display_name = path.name
-
-        if metadata_path.is_file():
-            try:
-                metadata = json.loads(metadata_path.read_text())
-                display_name = metadata.get("originalFileName") or display_name
-            except Exception:
-                display_name = path.name
-
         items.append(
             ReferenceAudioItem(
                 serverPath=str(path.resolve()),
-                fileName=display_name,
+                fileName=path.name,
                 audioUrl=f"/uploads/{path.name}",
             )
         )
@@ -187,9 +177,6 @@ async def upload_reference_audio(file: UploadFile = File(...)) -> ReferenceAudio
             if not chunk:
                 break
             handle.write(chunk)
-
-    metadata_path = target_path.with_suffix(f"{target_path.suffix}.json")
-    metadata_path.write_text(json.dumps({"originalFileName": target_path.name}, ensure_ascii=False))
 
     await file.close()
 

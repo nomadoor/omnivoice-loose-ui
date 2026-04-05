@@ -1,5 +1,7 @@
 import { reactive, ref } from 'vue'
 
+const SETTINGS_PERSIST_DELAY_MS = 300
+
 import { audioApi, loadAppState, saveAppState } from '../lib/api'
 import { resolveEffectiveMode } from '../lib/mode'
 import type { AppState, CreateJobInput, GenerationSettings, Job } from '../types'
@@ -55,9 +57,31 @@ export const useJobs = () => {
   const settings = reactive<GenerationSettings>(createDefaultSettings())
   const isProcessingQueue = ref(false)
   const isReady = ref(false)
+  let settingsPersistTimer: ReturnType<typeof setTimeout> | null = null
+  let lastPersistPromise: Promise<void> = Promise.resolve()
 
-  const persistState = async () => {
-    await saveAppState(toPersistedState(settings, jobs.value))
+  const persistState = () => {
+    const snapshot = toPersistedState(settings, jobs.value)
+    const nextPersistPromise = lastPersistPromise
+      .catch(() => undefined)
+      .then(() => saveAppState(snapshot))
+      .then(() => undefined)
+
+    lastPersistPromise = nextPersistPromise
+    return nextPersistPromise
+  }
+
+  const scheduleSettingsPersist = () => {
+    if (settingsPersistTimer) {
+      clearTimeout(settingsPersistTimer)
+    }
+
+    settingsPersistTimer = setTimeout(() => {
+      settingsPersistTimer = null
+      persistState().catch((error) => {
+        console.error('Failed to persist settings state.', error)
+      })
+    }, SETTINGS_PERSIST_DELAY_MS)
   }
 
   const initialize = async () => {
@@ -165,11 +189,16 @@ export const useJobs = () => {
   ) => {
     settings[key] = value
     if (isReady.value) {
-      void persistState()
+      scheduleSettingsPersist()
     }
   }
 
   const clearJobs = async () => {
+    if (settingsPersistTimer) {
+      clearTimeout(settingsPersistTimer)
+      settingsPersistTimer = null
+    }
+
     jobs.value = []
     await persistState()
   }

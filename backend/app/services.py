@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import math
-import uuid
+import re
+import secrets
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 import wave
@@ -24,8 +26,7 @@ class OmniVoiceService:
 
     async def generate(self, payload: GenerateRequest) -> tuple[Path, str]:
         settings.output_dir.mkdir(parents=True, exist_ok=True)
-        filename = f"{uuid.uuid4().hex}.wav"
-        output_path = settings.output_dir / filename
+        output_path = self._build_output_path(payload.text)
         effective_mode = resolve_effective_mode(
             payload.settings.mode,
             payload.settings.referenceAudio,
@@ -40,6 +41,19 @@ class OmniVoiceService:
             self._backend_name = "mock"
 
         return output_path, effective_mode
+
+    def _build_output_path(self, text: str) -> Path:
+        timestamp = datetime.now().strftime("%y%m%d-%H%M%S")
+        slug = self._slugify_text(text)
+        unique_suffix = secrets.token_hex(2)
+        base_name = f"{timestamp}-{slug}-{unique_suffix}" if slug else f"{timestamp}-{unique_suffix}"
+        return settings.output_dir / f"{base_name}.wav"
+
+    def _slugify_text(self, text: str) -> str:
+        normalized = re.sub(r"\s+", "-", text.strip())
+        normalized = re.sub(r'[\\/:*?"<>|]', '', normalized)
+        normalized = normalized.strip(".-_")
+        return normalized[:32]
 
     def _should_use_real_backend(self) -> bool:
         if settings.backend_mode == "mock":

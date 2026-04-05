@@ -75,7 +75,9 @@ const selectedVoiceInstructionItems = computed(() =>
     .filter(Boolean),
 )
 const selectedSavedAudioLabel = computed(() => {
-  const matched = recentReferenceAudio.value.find((item) => item.serverPath === props.settings.referenceAudio)
+  const matched = recentReferenceAudio.value.find(
+    (item) => item.serverPath === props.settings.referenceAudio,
+  )
   return matched?.fileName ?? 'Saved audio'
 })
 
@@ -112,6 +114,9 @@ const handleReferenceAudioUpload = async (file: File) => {
     applyReferenceAudio(result)
     await loadRecentReferenceAudio()
   } catch (error) {
+    revokePreviewUrl()
+    localPreviewUrl.value = ''
+    localFileName.value = ''
     uploadError.value = error instanceof Error ? error.message : 'Reference audio upload failed.'
   } finally {
     isUploading.value = false
@@ -239,263 +244,276 @@ watch(
 
 <template>
   <aside class="settings-panel">
-    <header class="settings-panel__header">
-      <p class="settings-panel__title">Settings</p>
-    </header>
+    <div class="settings-panel__content">
+      <header class="settings-panel__header">
+        <p class="settings-panel__title">Settings</p>
+      </header>
 
-    <div class="settings-grid">
-      <div class="field field--full">
-        <span class="field__label">Language</span>
-        <div class="pill-group">
-          <button
-            v-for="language in languages"
-            :key="language"
-            type="button"
-            class="pill-group__item"
-            :class="{ 'pill-group__item--active': settings.language === language }"
-            @click="emit('update', 'language', language)"
-          >{{ language }}</button>
-        </div>
-      </div>
-
-      <div class="field field--full">
-        <div class="field__label-row">
-          <span class="field__label">Reference Audio</span>
-          <span class="field__badge">
-            {{ hasReferenceAudio ? 'clone' : 'optional' }}
-          </span>
-        </div>
-        <p class="field__subtle">Optional. Add a clip to clone a voice.</p>
-        <input
-          ref="fileInput"
-          type="file"
-          accept="audio/*,.wav,.mp3,.m4a,.flac,.ogg"
-          class="sr-only"
-          @change="handleFileChange"
-        />
-        <div class="reference-audio-panel">
-          <div
-            v-if="recentReferenceAudio.length"
-            ref="savedAudioMenu"
-            class="reference-audio-select"
-          >
+      <div class="settings-grid">
+        <div class="field field--full">
+          <span class="field__label">Language</span>
+          <div class="pill-group">
             <button
+              v-for="language in languages"
+              :key="language"
               type="button"
-              class="reference-audio-select__trigger"
-              :class="{ 'reference-audio-select__trigger--open': isSavedAudioMenuOpen }"
-              aria-haspopup="listbox"
-              :aria-expanded="isSavedAudioMenuOpen"
-              @click="toggleSavedAudioMenu"
-            >
-              <span class="reference-audio-select__trigger-label">{{ selectedSavedAudioLabel }}</span>
-              <span class="reference-audio-select__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </span>
-            </button>
+              class="pill-group__item"
+              :class="{ 'pill-group__item--active': settings.language === language }"
+              @click="emit('update', 'language', language)"
+            >{{ language }}</button>
+          </div>
+        </div>
 
+        <div class="field field--full">
+          <div class="field__label-row">
+            <span class="field__label">Reference Audio</span>
+            <span class="field__badge">
+              {{ hasReferenceAudio ? 'clone' : 'optional' }}
+            </span>
+          </div>
+          <p class="field__subtle">Optional. Add a clip to clone a voice.</p>
+          <input
+            ref="fileInput"
+            type="file"
+            accept="audio/*,.wav,.mp3,.m4a,.flac,.ogg"
+            class="sr-only"
+            @change="handleFileChange"
+          />
+          <div class="reference-audio-panel">
             <div
-              v-if="isSavedAudioMenuOpen"
-              class="reference-audio-select__menu"
-              role="listbox"
-              aria-label="Saved reference audio"
+              v-if="recentReferenceAudio.length"
+              ref="savedAudioMenu"
+              class="reference-audio-select"
             >
               <button
                 type="button"
-                class="reference-audio-select__option"
-                :class="{ 'reference-audio-select__option--active': !settings.referenceAudio }"
-                @click="clearSavedReferenceSelection"
+                class="reference-audio-select__trigger"
+                :class="{ 'reference-audio-select__trigger--open': isSavedAudioMenuOpen }"
+                aria-haspopup="listbox"
+                :aria-expanded="isSavedAudioMenuOpen"
+                @click="toggleSavedAudioMenu"
               >
-                None
+                <span class="reference-audio-select__trigger-label">{{ selectedSavedAudioLabel }}</span>
+                <span class="reference-audio-select__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </span>
               </button>
-              <button
-                v-for="item in recentReferenceAudio"
-                :key="item.serverPath"
-                type="button"
-                class="reference-audio-select__option"
-                :class="{ 'reference-audio-select__option--active': settings.referenceAudio === item.serverPath }"
-                @click="selectSavedReferenceAudio(item)"
+
+              <div
+                v-if="isSavedAudioMenuOpen"
+                class="reference-audio-select__menu"
+                role="listbox"
+                aria-label="Saved reference audio"
               >
-                {{ item.fileName }}
-              </button>
-            </div>
-          </div>
-
-          <div v-if="settings.referenceAudio || localPreviewUrl" class="reference-audio-card">
-            <button
-              type="button"
-              class="reference-audio-card__clear"
-              :disabled="isUploading"
-              @click="clearReferenceAudio"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-              </svg>
-            </button>
-
-            <div class="reference-audio-card__meta">
-              <p class="reference-audio-card__title">{{ localFileName || 'Reference audio' }}</p>
-              <p class="reference-audio-card__subtle">
-                {{ isUploading ? 'uploading…' : 'Loaded' }}
-              </p>
-            </div>
-
-            <audio
-              v-if="localPreviewUrl"
-              class="reference-audio-preview"
-              :src="localPreviewUrl"
-              controls
-            />
-          </div>
-          <div
-            v-else
-            class="upload-dropzone"
-            :class="{ 'upload-dropzone--active': isDragActive }"
-            role="button"
-            tabindex="0"
-            @dragenter.prevent="isDragActive = true"
-            @dragover.prevent="isDragActive = true"
-            @dragleave.prevent="isDragActive = false"
-            @drop="handleDrop"
-            @click="!isUploading && openFilePicker()"
-            @keydown.enter.prevent="!isUploading && openFilePicker()"
-            @keydown.space.prevent="!isUploading && openFilePicker()"
-          >
-            <div class="upload-dropzone__body">
-              <div class="upload-dropzone__icon" aria-hidden="true">↑</div>
-              <p class="upload-dropzone__title">Drop audio here</p>
-              <p class="upload-dropzone__meta">
-                {{ isUploading ? 'uploading…' : 'Click to browse or drag and drop' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <p v-if="uploadError" class="field__error">{{ uploadError }}</p>
-      </div>
-
-      <label v-if="hasReferenceAudio" class="field field--full">
-        <span class="field__label field__label--with-help">
-          <span>Reference Transcript</span>
-          <span
-            class="field__help-trigger"
-            tabindex="0"
-            title="Optional. Used when reference audio is present. If empty, OmniVoice transcribes the reference audio automatically."
-          >
-            ?
-          </span>
-        </span>
-        <textarea
-          rows="3"
-          :value="settings.referenceTranscript"
-          placeholder="Optional transcript for clone mode"
-          @input="
-            emit('update', 'referenceTranscript', ($event.target as HTMLTextAreaElement).value)
-          "
-        />
-      </label>
-
-      <label class="field field--full">
-        <span class="field__label">Voice Instruction</span>
-        <div class="instruction-builder">
-          <div class="instruction-groups">
-            <div
-              v-for="group in voiceInstructionGroups"
-              :key="group.label"
-              class="instruction-group"
-            >
-              <p class="instruction-group__label">{{ group.label }}</p>
-              <div class="token-picker">
-                <button
-                  v-for="option in group.options"
-                  :key="option.value"
-                  type="button"
-                  class="token-picker__item"
-                  :class="{ 'token-picker__item--active': selectedVoiceInstructionItems.includes(option.value) }"
-                  @click="toggleVoiceInstructionOption(option.value)"
+                <div
+                  role="option"
+                  tabindex="0"
+                  class="reference-audio-select__option"
+                  :class="{ 'reference-audio-select__option--active': !settings.referenceAudio }"
+                  :aria-selected="!settings.referenceAudio"
+                  @click="clearSavedReferenceSelection"
+                  @keydown.enter.prevent="clearSavedReferenceSelection"
+                  @keydown.space.prevent="clearSavedReferenceSelection"
                 >
-                  {{ option.label }}
-                </button>
+                  None
+                </div>
+                <div
+                  v-for="item in recentReferenceAudio"
+                  :key="item.serverPath"
+                  role="option"
+                  tabindex="0"
+                  class="reference-audio-select__option"
+                  :class="{ 'reference-audio-select__option--active': settings.referenceAudio === item.serverPath }"
+                  :aria-selected="settings.referenceAudio === item.serverPath"
+                  @click="selectSavedReferenceAudio(item)"
+                  @keydown.enter.prevent="selectSavedReferenceAudio(item)"
+                  @keydown.space.prevent="selectSavedReferenceAudio(item)"
+                >
+                  {{ item.fileName }}
+                </div>
+              </div>
+            </div>
+
+            <div v-if="settings.referenceAudio || localPreviewUrl" class="reference-audio-card">
+              <div class="reference-audio-card__meta">
+                <div class="reference-audio-card__header">
+                  <p class="reference-audio-card__title">{{ localFileName || 'Reference audio' }}</p>
+                  <button
+                    type="button"
+                    class="reference-audio-card__clear"
+                    :disabled="isUploading"
+                    @click="clearReferenceAudio"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M18 6 6 18" />
+                      <path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <p class="reference-audio-card__subtle">
+                  {{ isUploading ? 'uploading…' : (settings.referenceAudio ? 'Loaded' : 'Not uploaded') }}
+                </p>
+              </div>
+
+              <audio
+                v-if="localPreviewUrl"
+                class="reference-audio-preview"
+                :src="localPreviewUrl"
+                controls
+              />
+            </div>
+            <div
+              v-else
+              class="upload-dropzone"
+              :class="{ 'upload-dropzone--active': isDragActive }"
+              role="button"
+              tabindex="0"
+              @dragenter.prevent="isDragActive = true"
+              @dragover.prevent="isDragActive = true"
+              @dragleave.prevent="isDragActive = false"
+              @drop="handleDrop"
+              @click="!isUploading && openFilePicker()"
+              @keydown.enter.prevent="!isUploading && openFilePicker()"
+              @keydown.space.prevent="!isUploading && openFilePicker()"
+            >
+              <div class="upload-dropzone__body">
+                <div class="upload-dropzone__icon" aria-hidden="true">↑</div>
+                <p class="upload-dropzone__title">Drop audio here</p>
+                <p class="upload-dropzone__meta">
+                  {{ isUploading ? 'uploading…' : 'Click to browse or drag and drop' }}
+                </p>
               </div>
             </div>
           </div>
-          <button
-            v-if="settings.voiceInstruction"
-            type="button"
-            class="button"
-            @click="emit('update', 'voiceInstruction', '')"
-          >
-            Clear
-          </button>
-        </div>
-      </label>
 
-      <div class="field field--full">
-        <div class="field__label-row">
-          <span class="field__label">Speed</span>
-          <span class="field__value">{{ settings.speed.toFixed(1) }}</span>
+          <p v-if="uploadError" class="field__error">{{ uploadError }}</p>
         </div>
-        <input
-          type="range"
-          min="0.5"
-          max="2"
-          step="0.1"
-          :value="settings.speed"
-          @input="emit('update', 'speed', Number(($event.target as HTMLInputElement).value))"
-        />
-      </div>
 
-      <div class="field field--full">
-        <div class="field__label-row">
-          <span class="field__label">Duration</span>
-          <span class="field__value">
-            {{ currentDurationLabel }}
+        <label v-if="hasReferenceAudio" class="field field--full">
+          <span class="field__label field__label--with-help">
+            <span>Reference Transcript</span>
+            <span
+              class="field__help-trigger"
+              tabindex="0"
+              title="Optional. Used when reference audio is present. If empty, OmniVoice transcribes the reference audio automatically."
+            >
+              ?
+            </span>
           </span>
-        </div>
-        <div class="pill-group">
-          <button
-            type="button"
-            class="pill-group__item"
-            :class="{ 'pill-group__item--active': settings.durationMode === 'auto' }"
-            @click="emit('update', 'durationMode', 'auto')"
-          >
-            auto
-          </button>
-          <button
-            type="button"
-            class="pill-group__item"
-            :class="{ 'pill-group__item--active': settings.durationMode === 'manual' }"
-            @click="emit('update', 'durationMode', 'manual')"
-          >
-            manual
-          </button>
-        </div>
-        <input
-          type="range"
-          min="1"
-          max="24"
-          step="1"
-          :value="settings.duration"
-          :disabled="settings.durationMode !== 'manual'"
-          @input="emit('update', 'duration', Number(($event.target as HTMLInputElement).value))"
-        />
-      </div>
+          <textarea
+            rows="3"
+            :value="settings.referenceTranscript"
+            placeholder="Optional transcript for clone mode"
+            @input="
+              emit('update', 'referenceTranscript', ($event.target as HTMLTextAreaElement).value)
+            "
+          />
+        </label>
 
-      <div class="field field--full">
-        <div class="field__label-row">
-          <span class="field__label">Num Step</span>
-          <span class="field__value">{{ settings.numStep }}</span>
+        <div class="field field--full field--voice-instruction">
+          <div class="field__label-row field__label-row--overlay">
+            <span class="field__label" id="voice-instruction-label">Voice Instruction</span>
+            <button
+              v-if="settings.voiceInstruction"
+              type="button"
+              class="field__badge field__badge--clear"
+              @click="emit('update', 'voiceInstruction', '')"
+            >
+              Clear
+            </button>
+          </div>
+          <div class="instruction-builder" role="group" aria-labelledby="voice-instruction-label">
+            <div class="instruction-groups">
+              <div
+                v-for="group in voiceInstructionGroups"
+                :key="group.label"
+                class="instruction-group"
+              >
+                <p class="instruction-group__label">{{ group.label }}</p>
+                <div class="token-picker">
+                  <button
+                    v-for="option in group.options"
+                    :key="option.value"
+                    type="button"
+                    class="token-picker__item"
+                    :class="{ 'token-picker__item--active': selectedVoiceInstructionItems.includes(option.value) }"
+                    @click="toggleVoiceInstructionOption(option.value)"
+                  >
+                    {{ option.label }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <input
-          type="range"
-          min="1"
-          max="100"
-          step="1"
-          :value="settings.numStep"
-          @input="emit('update', 'numStep', Number(($event.target as HTMLInputElement).value))"
-        />
+
+        <div class="field field--full">
+          <div class="field__label-row">
+            <span class="field__label">Speed</span>
+            <span class="field__value">{{ settings.speed.toFixed(1) }}</span>
+          </div>
+          <input
+            type="range"
+            min="0.5"
+            max="2"
+            step="0.1"
+            :value="settings.speed"
+            @input="emit('update', 'speed', Number(($event.target as HTMLInputElement).value))"
+          />
+        </div>
+
+        <div class="field field--full">
+          <div class="field__label-row">
+            <span class="field__label">Duration</span>
+            <span class="field__value">
+              {{ currentDurationLabel }}
+            </span>
+          </div>
+          <div class="pill-group">
+            <button
+              type="button"
+              class="pill-group__item"
+              :class="{ 'pill-group__item--active': settings.durationMode === 'auto' }"
+              @click="emit('update', 'durationMode', 'auto')"
+            >
+              auto
+            </button>
+            <button
+              type="button"
+              class="pill-group__item"
+              :class="{ 'pill-group__item--active': settings.durationMode === 'manual' }"
+              @click="emit('update', 'durationMode', 'manual')"
+            >
+              manual
+            </button>
+          </div>
+          <input
+            type="range"
+            min="1"
+            max="24"
+            step="1"
+            :value="settings.duration"
+            :disabled="settings.durationMode !== 'manual'"
+            @input="emit('update', 'duration', Number(($event.target as HTMLInputElement).value))"
+          />
+        </div>
+
+        <div class="field field--full">
+          <div class="field__label-row">
+            <span class="field__label">Num Step</span>
+            <span class="field__value">{{ settings.numStep }}</span>
+          </div>
+          <input
+            type="range"
+            min="1"
+            max="100"
+            step="1"
+            :value="settings.numStep"
+            @input="emit('update', 'numStep', Number(($event.target as HTMLInputElement).value))"
+          />
+        </div>
       </div>
     </div>
   </aside>
