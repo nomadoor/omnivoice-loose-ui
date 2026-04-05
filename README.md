@@ -11,6 +11,8 @@ This UI is for OmniVoice.
 
 ## What This Is
 
+https://github.com/user-attachments/assets/55cce0cc-7864-4ca7-b6a4-356a4922b5ec
+
 A small local Web UI for OmniVoice.
 
 - left: job history
