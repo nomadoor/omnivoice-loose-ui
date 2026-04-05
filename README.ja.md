@@ -4,6 +4,8 @@
 
 ## Original OmniVoice
 
+https://github.com/user-attachments/assets/55cce0cc-7864-4ca7-b6a4-356a4922b5ec
+
 これは OmniVoice 用のローカル UI です。
 
 - 元リポジトリ: https://github.com/k2-fsa/OmniVoice
